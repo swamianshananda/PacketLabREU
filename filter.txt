@@ -1,0 +1,10 @@
+ldb[0]
+jneq #0x45, fail
+ldb[9]
+jneq #1, fail
+ldb[20]
+jneq #11, fail
+ldb[21]
+jneq #0, fail
+ret #-1
+fail : ret #0
