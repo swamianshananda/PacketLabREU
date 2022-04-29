@@ -16,7 +16,7 @@ int main(){
     	struct sockaddr_in sa;  // IPv4
     	sa.sin_family = AF_INET;
     	sa.sin_port = htons(6969);
-    	inet_pton(AF_INET, "72.36.89.111", &(sa.sin_addr));
+    	inet_pton(AF_INET, "192.168.5.11", &(sa.sin_addr));
     	memset(sa.sin_zero, 0, sizeof(unsigned char)*8);
     	
     	uint32_t sourceIP = 0;
@@ -221,8 +221,8 @@ int main(){
 	    	
 	    
 	    	
-	    	for(int j = 0; j<act_hops; j++){
-	    		for(int i = 0; i<=j; i++){
+	    	for(int i = 0; i<act_hops; i++){
+	    		for(int j = i; j<act_hops; j++){
 	    			unsigned long sum = 0;
 	    			for(int k = i; k<=j; k++){    			
 	    				sum += locations[k].gap_m_time;
@@ -231,8 +231,8 @@ int main(){
 	    		}
 	    	}
 	    	
-	    	for(int j = 0; j<act_hops; j++){
-	    		for(int i = 0; i<=j; i++){
+	    	for(int i = 0; i<act_hops; i++){
+	    		for(int j = i; j<act_hops; j++){
 	    			unsigned long sum = 0;
 	    			for(int k = i; k<=j; k++){	
 	    				sum += abs(avg[i][j]-locations[k].gap_m_time);
@@ -241,8 +241,8 @@ int main(){
 	    		}
 	    	}
 	    	
-	    	for(int j = 0; j<act_hops; j++){
-	    		for(int i = 0; i<=j; i++){
+	    	for(int i = 0; i<act_hops; i++){
+	    		for(int j = i; j<act_hops; j++){
 	    			fs[i][j][0] = avg[i][j];
 	    			ls[i][j][0] = avg[i][j];
 	    			opt[i][j][0] = dist_sum[i][j];
@@ -250,28 +250,38 @@ int main(){
 	    	}
 	    	
 	    	for(int l = 1; l<act_hops; l++){
-	    		for(int j = 0; j<act_hops; j++){
-	    			for(int i = 0; i<=j; i++){
+	    		for(int i = 0; i<act_hops; i++){
+	    			for(int j = i; j<act_hops; j++){
 	    			
 	    				fs[i][j][l] = fs[i][j][l-1];
 	    				ls[i][j][l] = ls[i][j][l-1];
 	    				opt[i][j][l] = opt[i][j][l-1];
 	    				
 	    				for(int n = 0; n<act_hops; n++){
-	    					sp[i][j][l][n] = false;	
+	    					sp[i][j][l][n] = sp[i][j][l-1][n];	
 	    					
 	    				}
 	    				
 	    				for(int m = 0; m<l; m++){
 	    					for(int k = i; k<j; k++){
-	    					
-	    						if((abs(ls[i][k][m] - fs[k+1][j][l-m-1]) > 100000) && (opt[i][k][m]+opt[k+1][j][l-m-1] < opt[i][j][l])){
-	    						
-	    							opt[i][j][l] = opt[i][k][m] + opt[k+1][j][l-m-1];
+	    						//printf("ls[%i][%i][%i]: %lu\n",i,k,m, ls[i][k][m]);
+							//printf("fs[%i][%i][%i]: %lu\n",k+1,j,l-m-1, fs[k+1][j][l-m-1]);
+							//printf("opt[%i][%i][%i]: %lu\n", i,k,m,opt[i][k][m]);
+							//printf("opt[%i][%i][%i]: %lu\n", k+1, j, l-m-1, opt[k+1][j][l-m-1]);
+							//printf("opt[%i][%i][%i]: %lu\n", i, j, l, opt[i][j][l]);
+	    						if(((ls[i][k][m] - fs[k+1][j][l-m-1] > 100000) || (fs[k+1][j][l-m-1] - ls[i][k][m] > 100000))  && (opt[i][k][m]+opt[k+1][j][l-m-1] < opt[i][j][l])){
+	    						        //printf("The last step value of the optimal step function fitting the gap sequence between %u and %u with at most %u steps is %u\n", i, j, l, ls[k+1][j][l-m-1]);
+								//printf("The first step value of the optimal step function fitting the gap subsequence between %u and %u with at most %u steps is %u\n", i, j, l, fs[i][k][m]);
+	    							//printf("There is a splitting point from %i to %i with at most %i steps at %i\n", i, j, l, k);
+								opt[i][j][l] = opt[i][k][m] + opt[k+1][j][l-m-1];
 	    							ls[i][j][l] = ls[k+1][j][l-m-1];
 	    							fs[i][j][l] = fs[i][k][m];
-	    							sp[i][j][l][k] = true;
-	    						
+								for(int b = 0; b < act_hops; b++){
+									if(b == k)
+	    									sp[i][j][l][b] = true;
+									else
+										sp[i][j][l][b] = sp[i][k][m][b] | sp[k+1][j][l-m-1][b];
+	    							}
 	    						}
 	    					}
 	    				}
@@ -296,9 +306,16 @@ int main(){
     	for(int i = 0; i < act_hops; i++){
     		source = htonl(locations[i].address);
 	    	inet_ntop(AF_INET, &(source), address_string, sizeof(address_string));
-    		printf("location: %s had gap of %lu ns and modified time of %lu ns.\n", address_string, locations[i].gap_time, locations[i].gap_m_time);	
-	    	if(sp[0][act_hops-1][act_hops-1][i]){				
-	    		printf("potential chokepoint at location: %s \n", address_string);
+    		//printf("location: %s had gap of %lu ns and modified time of %lu ns.\n", address_string, locations[i].gap_time, locations[i].gap_m_time);	
+	    	if(sp[0][act_hops-1][act_hops-1][i]){
+			double conf = 0.0;
+			if( i == 0)
+				conf = 1.0;
+			else if (locations[i].gap_m_time - locations[i-1].gap_m_time >= 0)
+				conf = 1.0 - (double) locations[i-1].gap_m_time / (double) locations[i].gap_m_time;
+			else 
+				conf = (double) locations[i-1].gap_m_time / (double) locations[i].gap_m_time - 1.0; 				
+	    		printf("chokepoint at location: %s with gap %lu and conf %f \n", address_string, fs[i+1][act_hops-1][act_hops-1] - ls[0][i][act_hops-1], conf);
 	    	}
 
     	}

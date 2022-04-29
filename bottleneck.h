@@ -1,9 +1,9 @@
 #include "../pktlab-libpktlab/include/pktif.h"
-#include "../pktlab-libpktlab/lib/pktif/callbackmgr.h"
-#include "../pktlab-libpktlab/lib/pktif/struct_pktif.h"
-#include "../pktlab-libpktlab/lib/pktif/util/barrier.h"
-#include "../pktlab-libpktlab/lib/pktif/util/debug.h"
-#include "../pktlab-libpktlab/lib/pktif/util/util.h"
+#include "../pktlab-libpktlab/src/pktif/callbackmgr.h"
+#include "../pktlab-libpktlab/src/pktif/struct_pktif.h"
+#include "../pktlab-libpktlab/src/pktif/util/barrier.h"
+#include "../pktlab-libpktlab/src/pktif/util/debug.h"
+#include "../pktlab-libpktlab/src/pktif/util/util.h"
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
