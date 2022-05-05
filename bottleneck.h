@@ -3,7 +3,7 @@
 #include "../pktlab-libpktlab/src/pktif/struct_pktif.h"
 #include "../pktlab-libpktlab/src/pktif/util/barrier.h"
 #include "../pktlab-libpktlab/src/pktif/util/debug.h"
-#include "../pktlab-libpktlab/src/pktif/util/util.h"
+#include "../pktlab-libpktlab/src/pktif/util/util.h" //change this and the above based on location of pktlab library
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
