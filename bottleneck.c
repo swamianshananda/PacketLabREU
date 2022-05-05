@@ -5,7 +5,7 @@ int main(){
 
 	struct sockaddr_in endpoint;
     	endpoint.sin_family = AF_INET;
-    	endpoint.sin_port = htons(6969);
+    	endpoint.sin_port = htons(6969);	//change based on the endpoint
     	endpoint.sin_addr.s_addr = INADDR_ANY;
     	memset(endpoint.sin_zero, 0, sizeof(unsigned char)*8);
     	
@@ -15,8 +15,8 @@ int main(){
     	
     	struct sockaddr_in sa;  // IPv4
     	sa.sin_family = AF_INET;
-    	sa.sin_port = htons(6969);
-    	inet_pton(AF_INET, "192.168.5.11", &(sa.sin_addr));
+    	sa.sin_port = htons(6969);		//change based on the endpoint
+    	inet_pton(AF_INET, "192.168.5.11", &(sa.sin_addr));	//change based on the destination ip address.
     	memset(sa.sin_zero, 0, sizeof(unsigned char)*8);
     	
     	uint32_t sourceIP = 0;
